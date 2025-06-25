@@ -5,36 +5,85 @@ library(tidyverse)
 library(incidence2)
 
 dat_validated <- rio::import(
-  here::here("data","derived-data","simulated-ebola-validated.rds")
-) %>% 
+  here::here("data","derived_data","simulated_ebola_validated.rds")
+) %>%
   as_tibble()
 
 dat_validated
 
 
-# challenge ---------------------------------------------------------------
+# Aggregating and visualizing data --------------------------------------------
 
-#' task
-#' 1. run the whole script. Inspect `dat_incidence`. What changes?
-#' 2. modify one line #26: Replace `"gender"` by `"age_group"`. How does this affect the code downstream?
-#' 3. modify one line #27: Replace `"day"` by `"epiweek"`. How does this affect the code downstream?
-#' 4. modify one line #35: Block `fill = "gender"`. How does this affect the code downstream?
-
-dat_incidence <- dat_validated %>% 
+# TASK:
+# - Aggregate the incidence without a grouping and plot
+dat_incidence <- dat_validated %>%
   incidence2::incidence(
-    date_index = "date_onset", # 
-    groups = "gender", # challenge: change to "age_group"
+    date_index = "date_onset", # challenge: change to "date_sample"
     interval = "day", # challenge: change to "week" or "quarter" or "epiweek" or "isoweek"
-    complete_dates = TRUE # 
+    complete_dates = TRUE # challenge: change to FALSE
   )
 
 dat_incidence
 
-dat_incidence %>% 
+dat_incidence %>%
   plot(
-    fill = "gender", # challenge: change to "age_group"
-    angle = 45, # 
-    n_breaks = 5, # 
+    n_breaks = 5,
+    title = "Incidence of cases by date of onset",
+    legend = "bottom"
+  )
+
+
+# TASK:
+# - We can aggregate incidence by a grouping. Let's use gender and the date of onset as the reference date and plot
+dat_incidence <- dat_validated %>%
+  incidence2::incidence(
+    date_index = "date_onset", #
+    groups = "gender", # challenge: change to "age_group"
+    interval = "day", # challenge: change to "week" or "quarter" or "epiweek" or "isoweek"
+    complete_dates = TRUE #
+  )
+
+dat_incidence
+
+dat_incidence %>%
+  plot(
+    fill = "gender",
+    angle = 45,
+    n_breaks = 5,
+    title = "Incidence of cases by date of onset",
+    legend = "bottom"
+  )
+
+# TASK:
+# - Aggregate incidnce by `"age_group"` and in weekly intervals and plot.
+# - What do you observe?
+dat_validated %>%
+  incidence2::incidence(
+    date_index = "date_onset", #
+    groups = "age_group",
+    interval = "week",
+    complete_dates = TRUE #
+  ) %>%
+  plot(
+    fill = "age_group", # challenge: change to "age_group"
+    angle = 45, #
+    n_breaks = 5, #
+    title = "Incidence of cases by date of onset",
+    legend = "bottom"
+  )
+
+# TIP:
+# - If you do not specify the fill argument, the groups are facetted.
+dat_validated %>%
+  incidence2::incidence(
+    date_index = "date_onset", #
+    groups = "age_group",
+    interval = "week",
+    complete_dates = TRUE #
+  ) %>%
+  plot(
+    angle = 45, #
+    n_breaks = 5, #
     title = "Incidence of cases by date of onset",
     legend = "bottom"
   )
