@@ -13,7 +13,7 @@ dat <- rio::import(
 
 dat
 
-# Data cleaning pipeline
+# Step by step data cleaning pipeline
 cleaned_data <- dat %>%
   # Questions:
   # - What does the function below do?
@@ -35,7 +35,7 @@ cleaned_data <- dat %>%
   cleanepi::replace_missing_values(na_strings = "") %>% 
   # Questions:
   # - What does the function below do?
-  # - Do you have ideas of use cases of this fucntion in your current work?
+  # - Do you have ideas of use cases of this function in your current work?
   # - Are there other inconsistencies in IDs that is not captured in this function?
   # - Are there any built in assumptions in this function that makes it not applicable to your case?
   cleanepi::check_subject_ids(
@@ -51,34 +51,56 @@ cleaned_data <- dat %>%
     timeframe = c(
       as.Date("2014-01-01"), as.Date("2016-12-01") # challenge: from year 2016 to 2015
     ) 
-  ) %>% 
+  ) %>%
+  # Questions:
+  # - Do you have ideas of use cases of this function in your current work?
+  # - Are any of the arguments of particular interest to you?
   cleanepi::convert_to_numeric(
     target_columns = "age"
-  ) %>% 
-  cleanepi::clean_using_dictionary(dictionary = dat_dictionary) %>% # challenge: activate this
-  # cleanepi::print_report() # challenge: activate this
-  identity()
+  )
+
+cleaned_data
+
+# Discussion ---------------------------------------------------------------
+
+# Is the data completely cleaned? If not, which column is still problematic?
 
 cleaned_data
 
 
-# load data dictionary (collapse this) ----------------------------------------------------
 
-# Read this dictionary and run the function cleanepi::clean_using_dictionary()
-dat_dictionary <- tibble::tribble(
-  ~options,  ~values,     ~grp, ~orders,
-  "1",   "male", "gender",      1L, # remove this line: how does this affect the code downstream?
-  "2", "female", "gender",      2L,
-  "M",   "male", "gender",      3L,
-  "F", "female", "gender",      4L,
-  "m",   "male", "gender",      5L,
-  "f", "female", "gender",      6L
-)
+
+
+
+
+
+
+
+# SOLUTION: We'll use {cleanepi}'s dictionary-based cleaning
+
+## Define a dictionary for gender
+dat_dictionary <- expand_grid(
+  options = c("1", "2", "M", "F", "m", "f"),
+  values = rep(c("male", "female"), each = 3)
+) %>%
+  mutate(grp = "gender", orders = row_number())
 
 dat_dictionary
 
-# challenge ---------------------------------------------------------------
+# Run the function cleanepi::clean_using_dictionary()
+cleaned_data_fin <- cleaned_data %>% 
+  cleanepi::clean_using_dictionary(dictionary = dat_dictionary)
 
-#' task: 
-#' - Modify one line #47: Change `"2016-12-01"` to `"2014-12-01"`. What changes?
-#' - Modify one line #54: Activate `cleanepi::clean_using_dictionary()`. What changes?
+cleaned_data_fin
+
+# Let's view the final cleaning report
+cleaned_data_fin %>%
+  cleanepi::print_report()
+
+
+# Final steps -------------------------------------------------------------
+# Save the cleaned data
+rio::export(
+  cleaned_data_fin,
+  here::here("data", "derived_data", "simulated_ebola_cleaned.rds")
+)
