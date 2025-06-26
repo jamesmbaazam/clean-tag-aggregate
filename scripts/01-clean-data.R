@@ -7,8 +7,9 @@ library(rio)
 
 # Import the raw data
 dat <- rio::import(
-  here::here("data","raw_data","simulated_ebola_2.csv")
-) %>% 
+  here::here("data","raw_data","simulated_ebola_2.csv"),
+  trust = TRUE
+) %>%
   as_tibble()
 
 dat
@@ -19,10 +20,14 @@ cleaned_data <- dat %>%
   # - What does the function below do?
   # - How can we use the extra arguments provided?
   cleanepi::standardize_column_names() %>%
+  # Try out other arguments
+  #cleanepi::standardize_column_names(keep = "date onset") %>%
+  #cleanepi::standardize_column_names(rename = c("row_id" = "v1", "id" = "case_id")) %>%
+  ##cleanepi::standardize_column_names(keep = "date onset", rename = c("row_id" = "v1", "id" = "case_id")) %>%
   # Questions:
   # - What does the function below do?
   # - How do you interpret the `cutoff` argument?
-  cleanepi::remove_constants() %>% 
+  cleanepi::remove_constants() %>%
   # Questions:
   # - What does the function below do?
   # - How do you interpret the `target_columns` argument?
@@ -32,7 +37,7 @@ cleaned_data <- dat %>%
   # - How are NA's represented in this data?
   # - How is NA usually represented in data that you have encountered?
   #       - Are they present in the results of  `cleanepi::common_na_strings`?
-  cleanepi::replace_missing_values(na_strings = "") %>% 
+  cleanepi::replace_missing_values(na_strings = "") %>%
   # Questions:
   # - What does the function below do?
   # - Do you have ideas of use cases of this function in your current work?
@@ -41,16 +46,16 @@ cleaned_data <- dat %>%
   cleanepi::check_subject_ids(
     target_columns = "case_id",
     range = c(0, 15000)
-  ) %>% 
+  ) %>%
   # Questions:
   # - What does the function below do?
   # - Do you have ideas of use cases of this function in your current work?
   # - Are any of the arguments of particular interest to you?
   cleanepi::standardize_dates(
-    target_columns = c("date_onset"), # challenge: add "date_sample" to the vector
+    target_columns = c("date_onset"),
     timeframe = c(
-      as.Date("2014-01-01"), as.Date("2016-12-01") # challenge: from year 2016 to 2015
-    ) 
+      as.Date("2014-01-01"), as.Date("2016-12-01")
+    )
   ) %>%
   # Questions:
   # - Do you have ideas of use cases of this function in your current work?
@@ -79,17 +84,21 @@ cleaned_data
 # SOLUTION: We'll use {cleanepi}'s dictionary-based cleaning
 
 ## Define a dictionary for gender
-dat_dictionary <- expand_grid(
+dat_dictionary <- data.frame(
   options = c("1", "2", "M", "F", "m", "f"),
-  values = rep(c("male", "female"), each = 3)
-) %>%
-  mutate(grp = "gender", orders = row_number())
+  values = rep(c("male", "female"), times = 3),
+  grp = "gender"
+) |>
+  mutate(orders = row_number())
+
 
 dat_dictionary
 
 # Run the function cleanepi::clean_using_dictionary()
-cleaned_data_fin <- cleaned_data %>% 
-  cleanepi::clean_using_dictionary(dictionary = dat_dictionary)
+cleaned_data_fin <- cleaned_data %>%
+  cleanepi::clean_using_dictionary(
+    dictionary = dat_dictionary
+  )
 
 cleaned_data_fin
 
@@ -100,7 +109,7 @@ cleaned_data_fin %>%
 
 # Final steps -------------------------------------------------------------
 # Save the cleaned data
-rio::export(
-  cleaned_data_fin,
-  here::here("data", "derived_data", "simulated_ebola_cleaned.rds")
-)
+cleaned_data_fin |>
+  rio::export(
+    here::here("data", "derived_data", "simulated_ebola_cleaned.rds")
+  )

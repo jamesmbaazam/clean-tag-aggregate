@@ -1,12 +1,13 @@
 
 # Load packages -----------------------------------------------------------
 
-library(tibble)
+library(tidyverse)
 library(linelist)
 library(rio)
 
 dat_cleaned_df <- rio::import(
-  here::here("data","derived_data","simulated_ebola_cleaned.rds")
+  here::here("data","derived_data","simulated_ebola_cleaned.rds"),
+  trust = TRUE
 ) %>%
   as_tibble()
 
@@ -29,7 +30,8 @@ data_cleaned_ll <- dat_cleaned_df %>%
 data_cleaned_ll
 
 # Question
-# - What are some notable differences between data_cleaned_ll and dat_cleaned_df?
+# - What are some notable differences between
+# data_cleaned_ll and dat_cleaned_df?
 
 # Check that the new linelist is valid
 data_cleaned_ll |>
@@ -53,9 +55,13 @@ bad_age <- dat_cleaned_df %>%
   )
 
 # We wrap it in try() to avoid breaking the script when sourced
-try(linelist::validate_linelist(bad_age))
+# try(linelist::validate_linelist(bad_age))
+# linelist::validate_linelist(bad_age)
 
-#' TASK: Select some of the tagged columns with `dplyr::select()`. How does this affect the code downstream?
+#' TASK:
+#' - Select some of the tagged columns with
+#' `dplyr::select()`.
+#'  - How does this affect the code downstream?
 
 # Let's see
 dat_cleaned_df %>%
@@ -67,17 +73,21 @@ dat_cleaned_df %>%
   ) %>%
   dplyr::select(case_id, date_onset, gender)
 
-# Note that we can tighten the consequences of losing a tag by making it error instead
-## Before that, let's check the current action
+# Note that we can tighten the consequences of losing
+# a tag by making it error instead
+#
+# Before that, let's check the current action
 linelist::get_lost_tags_action()
 
-## Let's change the current action and run the pipeline above again
+# Let's change the current action and run the
+# pipeline above again
 linelist::lost_tags_action("error")
 
 ## This was for demo purposes, so let's return it to a wanring
 linelist::lost_tags_action("warning")
 
-# FINALLY: let's run the whole safeguarding pipeline and generate a df of tags used
+# FINALLY: let's run the whole safeguarding
+# pipeline and generate a df of tags used
 dat_cleaned_df %>%
   linelist::make_linelist(
     id = "case_id",

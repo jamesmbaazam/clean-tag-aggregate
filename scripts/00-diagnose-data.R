@@ -7,8 +7,9 @@ library(here)
 
 # Use paths relative to rproj
 dat <- rio::import(
-  here::here("data", "raw_data", "simulated_ebola_2.csv")
-) %>% 
+  here::here("data", "raw_data", "simulated_ebola_2.csv"),
+  trust = TRUE
+) %>%
   as_tibble()
 
 # First look at the data
