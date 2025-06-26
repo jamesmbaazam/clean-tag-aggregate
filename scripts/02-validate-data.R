@@ -55,7 +55,7 @@ bad_age <- dat_cleaned_df %>%
   )
 
 # We wrap it in try() to avoid breaking the script when sourced
-# try(linelist::validate_linelist(bad_age))
+try(linelist::validate_linelist(bad_age))
 # linelist::validate_linelist(bad_age)
 
 #' TASK:
@@ -81,10 +81,10 @@ linelist::get_lost_tags_action()
 
 # Let's change the current action and run the
 # pipeline above again
-linelist::lost_tags_action("error")
+# linelist::lost_tags_action("error")
 
 ## This was for demo purposes, so let's return it to a wanring
-linelist::lost_tags_action("warning")
+# linelist::lost_tags_action("warning")
 
 # FINALLY: let's run the whole safeguarding
 # pipeline and generate a df of tags used
@@ -106,7 +106,7 @@ dat_cleaned_validated <- dat_cleaned_df |>
    dplyr::mutate(
      age_group = base::cut(
        x = age,
-       breaks = c(0, 20, 30, 50),
+       breaks = c(0, 20, 35, 60, 80),
        include.lowest = TRUE,
        right = FALSE
      )
